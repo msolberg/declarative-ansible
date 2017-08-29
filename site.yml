@@ -1,0 +1,11 @@
+---
+# This playbook describes an application deployment onto a single host
+
+# Apply common configuration
+- hosts: all
+
+  roles:
+    - X86Platform
+    - RHELPlatform
+    - ExtPlatform
+    - Application
