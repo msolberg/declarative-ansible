@@ -33,4 +33,7 @@ Dependencies:
   X86Platform:
     version: 1.2
     hardware: s8
+    overrides: {}
+
+
 

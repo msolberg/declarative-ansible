@@ -1,3 +1,37 @@
 ---
-# This role configures extended attributes
+# This role deploys a virtual machine
+- name: merge overrides
+  set_fact: settings={{ X86Platform | combine(Dependencies.X86Platform.overrides) }}
+
+- name: Launch X86 Instance
+  os_server:
+    state: present
+    name: "{{ settings.instance_name }}"
+    image: "{{ settings.os_image }}"
+    key_name: "{{ settings.os_keypair }}"
+    timeout: 200
+    flavor: "{{ settings.os_flavor }}"
+    floating_ip_pools: "{{ settings.os_floating_ip_pools }}"
+    nics:
+      - network: "{{ settings.os_network }}"
+    meta:
+      hostname: "{{ settings.instance_name }}.openstacklocal"
+  register: nova
+  
+- name: wait for ssh on instance
+  command: >
+    ssh -o BatchMode=yes -oStrictHostKeyChecking=no
+    cloud-user@{{nova.server.public_v4}} true
+  register: result
+  until: result|success
+  retries: 30
+  delay: 10
+  
+- name: add instance to inventory
+  add_host:
+    name: "{{ settings.instance_name }}"
+    groups: application
+    ansible_host: "{{ nova.server.public_v4 }}"
+    ansible_user: cloud-user
+    become: yes
 
