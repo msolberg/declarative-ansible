@@ -17,6 +17,12 @@
     fstype: ext4
   with_items: "{{ Application.mounts | default([]) }}"
 
+- name: Ensure mountpoints exist
+  file:
+    path: "{{ item.mountpoint }}"
+    state: directory
+  with_items: "{{ Application.mounts | default([]) }}"
+
 - name: Setup up mounts
   mount:
     path: "{{ item.mountpoint }}"
