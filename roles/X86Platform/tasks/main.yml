@@ -28,13 +28,9 @@
   register: nova
 
 - name: wait for ssh on instance
-  command: >
-    ssh -o BatchMode=yes -oStrictHostKeyChecking=no
-    cloud-user@{{nova.results[0].server.public_v4}} true
-  register: result
-  until: result|success
-  retries: 30
-  delay: 10
+  wait_for_connection:
+    retries: 30
+    delay: 10
   
 - name: add instance to inventory
   add_host:
