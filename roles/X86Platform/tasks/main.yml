@@ -3,8 +3,16 @@
 - name: merge overrides
   set_fact: settings={{ X86Platform | combine(Dependencies.X86Platform.overrides) }}
 
+# Load OpenStack config (if not loaded)
+- stat: path="{{ lookup('env', 'OS_CLIENT_CONFIG_FILE') }}"
+  register: st
+- include_vars: "{{ lookup('env', 'OS_CLIENT_CONFIG_FILE') }}"
+  when: st.stat.exists and st.stat.isreg
+
 - name: Launch X86 Instance
-  os_server:
+  local_action:
+    module: os_server
+    auth: "{{ item.value.auth }}"
     state: present
     name: "{{ settings.instance_name }}"
     image: "{{ settings.os_image }}"
@@ -16,12 +24,16 @@
       - network: "{{ settings.os_network }}"
     meta:
       hostname: "{{ settings.instance_name }}.openstacklocal"
+  with_dict: "{{ clouds }}"
   register: nova
+
+- debug:
+    msg: "{{ nova.results[0].server }}"
   
 - name: wait for ssh on instance
   command: >
     ssh -o BatchMode=yes -oStrictHostKeyChecking=no
-    cloud-user@{{nova.server.public_v4}} true
+    cloud-user@{{nova.results[0].server.public_v4}} true
   register: result
   until: result|success
   retries: 30
@@ -31,7 +43,7 @@
   add_host:
     name: "{{ settings.instance_name }}"
     groups: application
-    ansible_host: "{{ nova.server.public_v4 }}"
+    ansible_host: "{{ nova.results[0].server.public_v4 }}"
     ansible_user: cloud-user
     become: yes
 
