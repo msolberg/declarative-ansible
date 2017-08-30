@@ -22,7 +22,7 @@
     auth: "{{ auth }}"
     state: present
     size: 1
-    display_name: "{{ Application.name }}-{{ item.name }}"
+    display_name: "{{ Application.name }}-{{ Application.version}}-{{ item.name }}"
   with_items: "{{ Application.mounts | default([]) }}"
   register: cinder
 
@@ -31,7 +31,7 @@
     module: os_server
     auth: "{{ auth }}"
     state: present
-    name: "{{ settings.instance_name }}"
+    name: "{{ Application.name }}-{{ Application.version}}"
     image: "{{ settings.os_image }}"
     key_name: "{{ settings.os_keypair }}"
     timeout: 200
@@ -40,7 +40,7 @@
     nics:
       - network: "{{ settings.os_network }}"
     meta:
-      hostname: "{{ settings.instance_name }}.openstacklocal"
+      hostname: "{{ Application.name }}.openstacklocal"
     volumes: "{{ cinder|json_query('results[*].volume.display_name') }}"
   register: nova
 
@@ -50,7 +50,7 @@
 
 - name: add instance to inventory
   add_host:
-    name: "{{ settings.instance_name }}"
+    name: "{{ Application.name }}.openstacklocal"
     groups: application
     ansible_host: "{{ nova.server.public_v4 }}"
     ansible_user: cloud-user

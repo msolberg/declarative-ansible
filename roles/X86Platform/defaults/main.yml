@@ -2,7 +2,6 @@
 # Common variables
 
 X86Platform:
-  instance_name: X86
   os_image: rhel-guest-image-7.3-35
   os_network: private
   os_flavor: m1.small
