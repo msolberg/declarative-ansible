@@ -27,9 +27,6 @@
   with_dict: "{{ clouds }}"
   register: nova
 
-- debug:
-    msg: "{{ nova.results[0].server }}"
-  
 - name: wait for ssh on instance
   command: >
     ssh -o BatchMode=yes -oStrictHostKeyChecking=no
