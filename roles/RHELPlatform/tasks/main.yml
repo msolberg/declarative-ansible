@@ -16,12 +16,6 @@
 - name: start katello agent
   service: name=goferd state=started enabled=yes
 
-- name: set puppet configuration
-  template: src=templates/puppet.conf.j2 dest=/etc/puppet/puppet.conf mode=0644
-
-- name: run puppet
-  puppet: 
-
 - name: set kernel params
   sysctl: name={{ item.name }} value={{ item.value }} state=present
   with_items: "{{ settings.kernel_param | default([]) }}"
